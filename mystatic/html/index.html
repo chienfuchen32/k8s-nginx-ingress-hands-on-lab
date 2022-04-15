@@ -1,0 +1,26 @@
+<script src="static/js/socket.io.js"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io(window.location.protocol + "//" + window.location.host, { path: window.location.pathname + 'socket.io' });
+    socket.on('connect', function() {
+        setInterval(function(){
+            socket.emit('event', {'message': 'good day'});
+        }, 3000);
+    });
+
+    function display()
+    {
+        function reqListener () {
+            var color = JSON.parse(this.responseText).message;
+            var col=document.getElementById("demo");
+            col.style.color = color;
+        }
+        var oReq = new XMLHttpRequest();
+        oReq.addEventListener("load", reqListener);
+        oReq.open("GET", window.location.protocol + "//" + window.location.host + window.location.pathname + 'v1/color')
+        oReq.send();
+    }
+</script>
+<head>
+    <h3>k8s-nginx-ingress-lab</h3>
+    <p>Please open <span id="demo"> debugging tool</span> in the browser, check the http and websocket request</p>
+    <button onclick="display()">change color</button>

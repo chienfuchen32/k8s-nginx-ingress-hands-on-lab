@@ -1,0 +1,75 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-lab-bar-foo
+  namespace: 20220415-nginx-lab
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+    nginx.org/location-snippets: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+spec:
+  tls:
+    - hosts:
+        - lab-20220415.bar.foo.com
+      secretName: foo-tls
+  rules:
+    - host: lab-20220415.bar.foo.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: nginx-lab-no-prefix
+              servicePort: 5000
+    - host: lab-20220415.foo.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: nginx-lab-no-prefix
+              servicePort: 5000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-lab
+  namespace: 20220415-nginx-lab
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+    nginx.org/location-snippets: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+spec:
+  rules:
+    - host: lab-20220415.foo.com
+      http:
+        paths:
+          - path: /nginx-lab(/|$)(.*)
+            backend:
+              serviceName: nginx-lab
+              servicePort: 5000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-lab-rewrite
+  namespace: 20220415-nginx-lab
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    nginx.org/location-snippets: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+spec:
+  rules:
+    - host: lab-20220415.foo.com
+      http:
+        paths:
+          - path: /nginx-lab-rewrite(/|$)(.*)
+            backend:
+              serviceName: nginx-lab-no-prefix
+              servicePort: 5000
